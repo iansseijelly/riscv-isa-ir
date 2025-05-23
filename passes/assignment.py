@@ -48,7 +48,6 @@ def has_register_assignment(tree: ast.Module):
 def has_register_read_rs1(tree: ast.Module):
     subscripts = extract_subscripts(tree)
     for subscript in subscripts:
-        print(subscript.value)
         if subscript.value.id == "regfile" \
                 and subscript.slice.id == "rs1" \
                 and subscript.value.ctx == ast.Load():
