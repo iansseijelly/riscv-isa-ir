@@ -1,5 +1,3 @@
-# given a @instr, determine whether an register assignment exists in the body
-
 import ast
 
 
@@ -35,24 +33,54 @@ def is_valid_instruction(node: ast.AST):
 
 
 # is there a register assignment in the body?
-def has_register_assignment(tree: ast.Module):
+def has_register_write_rd(tree: ast.Module):
     assignments = extract_assignments(tree)
     for assignment in assignments:
-        if len(assignment.targets) == 1 \
-                and isinstance(assignment.targets[0], ast.Subscript) \
-                and assignment.targets[0].value.id == "regfile":
-            return True
+        match assignment:
+            case ast.Assign(
+                targets=[ast.Subscript(
+                    value=ast.Attribute(
+                        value=ast.Name(id="state"),
+                        attr="regfile"
+                    ),
+                    slice=ast.Name(id="rd"),
+                    ctx=ast.Store()
+                )]
+            ):
+                return True
     return False
 
 
 def has_register_read_rs1(tree: ast.Module):
     subscripts = extract_subscripts(tree)
     for subscript in subscripts:
-        if subscript.value.id == "regfile" \
-                and subscript.slice.id == "rs1" \
-                and subscript.value.ctx == ast.Load():
-            return "OP1_RS1"
+        match subscript:
+            case ast.Subscript(
+                value=ast.Attribute(
+                    value=ast.Name(id="state"),
+                    attr="regfile"
+                ),
+                slice=ast.Name(id="rs1"),
+                ctx=ast.Load()
+            ):
+                return "OP1_RS1"
     return "OP1_X"
+
+
+def has_register_read_rs2(tree: ast.Module):
+    subscripts = extract_subscripts(tree)
+    for subscript in subscripts:
+        match subscript:
+            case ast.Subscript(
+                value=ast.Attribute(
+                    value=ast.Name(id="state"),
+                    attr="regfile"
+                ),
+                slice=ast.Name(id="rs2"),
+                ctx=ast.Load()
+            ):
+                return "OP2_RS2"
+    return "OP2_X"
 
 
 def test_register_assignment(tree: ast.Module):
@@ -74,9 +102,7 @@ def has_pc_assignment(tree: ast.Module):
         if len(assignment.targets) == 1 \
                 and isinstance(assignment.targets[0], ast.Name) \
                 and assignment.targets[0].id == "pc":
-            print("1")
             return True
-    print("0")
     return False
 
 

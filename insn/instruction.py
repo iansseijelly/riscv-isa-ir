@@ -1,10 +1,8 @@
 from typing import Callable
 import inspect
 import ast
-import passes.assignment
-
-from passes.assignment import has_register_assignment
-
+import passes.register
+import passes.mem
 
 def instr(fn: Callable):
     src = inspect.getsource(fn)
@@ -21,18 +19,32 @@ def instr(fn: Callable):
     # duc = beniget.DefUseChains()
     # duc.visit(tree)
 
-    print(ast.dump(tree, indent=2))
+    # print(ast.dump(tree, indent=2))
 
     # Valid
-    valid = passes.assignment.is_valid_instruction(tree)
+    valid = passes.register.is_valid_instruction(tree)
     print(f"Valid: {valid}")
 
     # BR_TYPE
-    br_type = passes.assignment.test_conditional_assignment(tree)
+    br_type = passes.register.test_conditional_assignment(tree)
     print(f"BR_TYPE: {br_type}")
 
     # has_register_read_rs1
-    rs1 = passes.assignment.has_register_read_rs1(tree)
+    rs1 = passes.register.has_register_read_rs1(tree)
     print(f"has_register_read_rs1: {rs1}")
 
-    has_register_assignment(tree)
+    # has_register_read_rs2
+    rs2 = passes.register.has_register_read_rs2(tree)
+    print(f"has_register_read_rs2: {rs2}")
+
+    # has_register_write_rd
+    rd = passes.register.has_register_write_rd(tree)
+    print(f"has_register_write_rd: {rd}")
+
+    # get_mem_read_size
+    mem_read_size = passes.mem.get_mem_read_size(tree)
+    print(f"get_mem_read_size: {mem_read_size}")
+
+    # get_mem_write_size
+    mem_write_size = passes.mem.get_mem_write_size(tree)
+    print(f"get_mem_write_size: {mem_write_size}")
